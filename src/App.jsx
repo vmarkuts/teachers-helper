@@ -65,6 +65,8 @@ export default function App() {
     setErrorText('');
     setIsSaved(false);
 
+    const concernLabel = concerns.find(c => c.id === selectedConcernArea)?.label;
+
     let promptText = `You are an expert Educational Psychologist. A teacher is observing a student with concerns related to "${concernLabel}".\n\n`;
     promptText += `Observed behaviors:\n`;
     selectedObservations.forEach(obs => { promptText += `- ${obs}\n`; });
