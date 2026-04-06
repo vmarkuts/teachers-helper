@@ -267,6 +267,10 @@ export default function App() {
           </button>
         </>
       )}
+
+      <div className="watermark-footer">
+        <p>Proudly made by <a href="https://github.com/vmarkuts/teachers-helper" target="_blank" rel="noopener noreferrer">vmarkuts</a></p>
+      </div>
     </div>
   );
 }

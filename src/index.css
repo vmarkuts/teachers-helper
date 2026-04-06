@@ -297,6 +297,24 @@ textarea.input-field {
   margin: 24px 0;
 }
 
+.watermark-footer {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.watermark-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.watermark-footer a:hover {
+  text-decoration: underline;
+}
+
 /* Loader */
 .loader-container {
   display: flex;
