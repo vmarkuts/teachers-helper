@@ -84,7 +84,7 @@ export default function App() {
           'X-Title': 'Teacher Support MVP'      // Recommended by OpenRouter
         },
         body: JSON.stringify({
-          model: 'openrouter/auto', // Will use the best active model based on user's routing settings
+          model: 'google/gemma-3-12b-it:free', // Reverted back to the stable Gemma model for faster generation
           messages: [{ role: 'user', content: promptText }],
           temperature: 0.7,
           max_tokens: 400
