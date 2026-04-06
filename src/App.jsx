@@ -24,7 +24,7 @@ const fallbackStrategies = {
 export default function App() {
   const [apiKey] = useState(import.meta.env.VITE_OPENROUTER_API_KEY || '');
   const [view, setView] = useState('SELECT_CONCERN'); // SELECT_CONCERN, INPUT_OBSERVATION, LOADING, RESULTS, EXPIRED
-  
+
   // App Data
   const [selectedConcernArea, setSelectedConcernArea] = useState(null);
   const [selectedObservations, setSelectedObservations] = useState([]);
@@ -73,7 +73,7 @@ export default function App() {
     if (customNotes) {
       promptText += `- Teacher's additional notes: ${customNotes}\n`;
     }
-    
+
     promptText += `\nPlease provide:\n1. 3 practical, immediately actionable strategies for the classroom.\n2. A short, empathetic script (what to say).\n\nCRITICAL: Output ONLY the requested strategies and script. Do NOT include any introductory or concluding text (e.g., skip "Okay, here's..."). Format using clean markdown (Bold for emphasis, Headers for sections, and Bullet points).`;
 
     try {
@@ -86,7 +86,7 @@ export default function App() {
           'X-Title': 'Teacher Support MVP'      // Recommended by OpenRouter
         },
         body: JSON.stringify({
-          model: 'google/gemma-3-12b-it:free', // Reverted back to the stable Gemma model for faster generation
+          model: 'openrouter/auto', // Will use the best active model based on user's routing settings
           messages: [{ role: 'user', content: promptText }],
           temperature: 0.7,
           max_tokens: 400
@@ -94,11 +94,11 @@ export default function App() {
       });
 
       const data = await response.json();
-      
+
       if (data.error) {
         let errorMsg = data.error.message || "API Error";
         if (data.error.code === 429 || (data.error.metadata && data.error.metadata.raw && data.error.metadata.raw.includes("rate-limited"))) {
-            errorMsg = "The AI server is currently overloaded due to high traffic. Please wait 10 seconds and try generating again.";
+          errorMsg = "The AI server is currently overloaded due to high traffic. Please wait 10 seconds and try generating again.";
         }
         throw new Error(errorMsg);
       }
@@ -108,7 +108,7 @@ export default function App() {
     } catch (err) {
       console.error("API Error, using fallback:", err);
       const fallbackText = fallbackStrategies[selectedConcernArea] || fallbackStrategies.behaviour;
-      const disclaimer = "\n\n> ⚠️ *Note: Our AI server is currently overloaded. We've provided these proven, standard baseline strategies instead so you can still support the student immediately.*";
+      const disclaimer = `\n\n> ⚠️ **API Error:** ${err.message}\n> \n> *We've provided our standard baseline strategies instead so you can still support the student immediately.*`;
       setAiResult(fallbackText + disclaimer);
       setView('RESULTS');
     }
@@ -118,7 +118,7 @@ export default function App() {
     // Generate text content for download
     const dateStr = new Date().toISOString().split('T')[0];
     const concernLabel = concerns.find(c => c.id === selectedConcernArea)?.label || 'Concern';
-    
+
     let content = `--- EDUCATOR SUPPORT NOTE ---\nDate: ${dateStr}\nPrimary Concern: ${concernLabel}\n\n`;
     content += `OBSERVATIONS:\n`;
     selectedObservations.forEach(o => content += `- ${o}\n`);
@@ -167,11 +167,11 @@ export default function App() {
             <h2 className="header-title">What is your primary concern?</h2>
             <p className="header-subtitle">Select an area to get tailored strategies.</p>
           </div>
-          
+
           <div className="concern-grid">
             {concerns.map(concern => (
-              <div 
-                key={concern.id} 
+              <div
+                key={concern.id}
                 className="concern-item"
                 onClick={() => handleSelectConcern(concern.id)}
               >
@@ -192,7 +192,7 @@ export default function App() {
           <div className="card">
             <h2 className="header-title" style={{ textAlign: 'left', fontSize: '20px' }}>What are you observing?</h2>
             <p className="header-subtitle" style={{ textAlign: 'left', marginBottom: '16px' }}>Select all that apply for {concerns.find(c => c.id === selectedConcernArea)?.label}.</p>
-            
+
             {errorText && (
               <div style={{ padding: '12px', backgroundColor: '#FEF2F2', color: 'var(--danger)', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
                 {errorText}
@@ -204,8 +204,8 @@ export default function App() {
                 const checked = selectedObservations.includes(obs);
                 return (
                   <div key={idx} className={`checkbox-item ${checked ? 'checked' : ''}`} onClick={() => toggleObservation(obs)}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="checkbox-input"
                       checked={checked}
                       readOnly
@@ -218,8 +218,8 @@ export default function App() {
 
             <div className="form-group">
               <label className="form-label">Additional Context (Optional)</label>
-              <textarea 
-                className="input-field" 
+              <textarea
+                className="input-field"
                 placeholder="E.g., It usually happens after recess..."
                 value={customNotes}
                 onChange={(e) => setCustomNotes(e.target.value)}
@@ -248,20 +248,20 @@ export default function App() {
 
           <div className="card" style={{ marginBottom: '16px' }}>
             <h2 className="header-title" style={{ textAlign: 'left', fontSize: '20px' }}>Recommended Strategies</h2>
-            
+
             <div className="result-content">
               <ReactMarkdown>{aiResult}</ReactMarkdown>
             </div>
 
-            <button 
-              className={`btn ${isSaved ? 'btn-secondary' : 'btn-primary'}`} 
+            <button
+              className={`btn ${isSaved ? 'btn-secondary' : 'btn-primary'}`}
               onClick={handleSaveResult}
               disabled={isSaved}
             >
               {isSaved ? <><CheckCircle size={18} /> Downloaded</> : <><Save size={18} /> Download as .TXT</>}
             </button>
           </div>
-          
+
           <button className="btn btn-secondary" onClick={() => setView('SELECT_CONCERN')}>
             Start a New Observation
           </button>
