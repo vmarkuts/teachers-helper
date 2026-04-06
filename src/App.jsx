@@ -97,7 +97,7 @@ export default function App() {
       if (data.error) {
         let errorMsg = data.error.message || "API Error";
         if (data.error.code === 429 || (data.error.metadata && data.error.metadata.raw && data.error.metadata.raw.includes("rate-limited"))) {
-            errorMsg = "Сервер бесплатных нейросетей перегружен (429 Rate Limit). Подождите 10 секунд и нажмите Generate еще раз.";
+            errorMsg = "The AI server is currently overloaded due to high traffic. Please wait 10 seconds and try generating again.";
         }
         throw new Error(errorMsg);
       }
@@ -114,19 +114,27 @@ export default function App() {
   };
 
   const handleSaveResult = () => {
-    const existingStr = localStorage.getItem('teacher_mvp_notes') || '[]';
-    const existing = JSON.parse(existingStr);
+    // Generate text content for download
+    const dateStr = new Date().toISOString().split('T')[0];
+    const concernLabel = concerns.find(c => c.id === selectedConcernArea)?.label || 'Concern';
     
-    const newNote = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      concern: selectedConcernArea,
-      observations: selectedObservations,
-      notes: customNotes,
-      result: aiResult
-    };
-    
-    localStorage.setItem('teacher_mvp_notes', JSON.stringify([newNote, ...existing]));
+    let content = `--- EDUCATOR SUPPORT NOTE ---\nDate: ${dateStr}\nPrimary Concern: ${concernLabel}\n\n`;
+    content += `OBSERVATIONS:\n`;
+    selectedObservations.forEach(o => content += `- ${o}\n`);
+    if (customNotes) content += `\nADDITIONAL CONTEXT:\n${customNotes}\n`;
+    content += `\n---------------------------------------\n\nRECOMMENDED STRATEGIES:\n\n${aiResult}`;
+
+    // Trigger download
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Pupil_Note_${concernLabel.replace(/\s+/g, '_')}_${dateStr}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
     setIsSaved(true);
   };
 
@@ -249,7 +257,7 @@ export default function App() {
               onClick={handleSaveResult}
               disabled={isSaved}
             >
-              {isSaved ? <><CheckCircle size={18} /> Note Saved</> : <><Save size={18} /> Save Note Locally</>}
+              {isSaved ? <><CheckCircle size={18} /> Downloaded</> : <><Save size={18} /> Download as .TXT</>}
             </button>
           </div>
           
