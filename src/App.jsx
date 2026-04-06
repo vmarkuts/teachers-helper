@@ -156,7 +156,7 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="prototype-watermark">
-        PROTOTYPE VERSION - NOT FOR PRODUCTION
+        PROPOSAL PROTOTYPE VERSION - NOT FOR PRODUCTION
       </div>
 
 
@@ -269,7 +269,7 @@ export default function App() {
       )}
 
       <div className="watermark-footer">
-        <p>Proudly made by <a href="https://github.com/vmarkuts/teachers-helper" target="_blank" rel="noopener noreferrer">vmarkuts</a></p>
+        <p>Proudly made by <a href="https://markuts.com" target="_blank" rel="noopener noreferrer">Vlad Markuts</a></p>
       </div>
     </div>
   );
