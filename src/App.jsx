@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Activity, Eye, Users, ChevronLeft, Send, Save, CheckCircle, ShieldAlert } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { concerns, observationsByConcern } from './data/mockConcerns';
 
 // --- Configuration ---
@@ -64,16 +65,14 @@ export default function App() {
     setErrorText('');
     setIsSaved(false);
 
-    const concernLabel = concerns.find(c => c.id === selectedConcernArea)?.label;
-    
-    let prompt = `You are an expert Educational Psychologist. A teacher is observing a student with concerns related to "${concernLabel}".\n\n`;
-    prompt += `Observed behaviors:\n`;
-    selectedObservations.forEach(obs => { prompt += `- ${obs}\n`; });
+    let promptText = `You are an expert Educational Psychologist. A teacher is observing a student with concerns related to "${concernLabel}".\n\n`;
+    promptText += `Observed behaviors:\n`;
+    selectedObservations.forEach(obs => { promptText += `- ${obs}\n`; });
     if (customNotes) {
-      prompt += `- Teacher's additional notes: ${customNotes}\n`;
+      promptText += `- Teacher's additional notes: ${customNotes}\n`;
     }
     
-    prompt += `\nPlease provide:\n1. 3 practical, immediately actionable strategies for the classroom.\n2. A short, empathetic script (what to say) to help the student regulate or redirect.\n3. Keep the response very brief, supportive, and formatted beautifully in markdown.`;
+    promptText += `\nPlease provide:\n1. 3 practical, immediately actionable strategies for the classroom.\n2. A short, empathetic script (what to say).\n\nCRITICAL: Output ONLY the requested strategies and script. Do NOT include any introductory or concluding text (e.g., skip "Okay, here's..."). Format using clean markdown (Bold for emphasis, Headers for sections, and Bullet points).`;
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -86,7 +85,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: 'openrouter/auto', // Will use the best active model based on user's routing settings
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: promptText }],
           temperature: 0.7,
           max_tokens: 400
         })
@@ -249,7 +248,7 @@ export default function App() {
             <h2 className="header-title" style={{ textAlign: 'left', fontSize: '20px' }}>Recommended Strategies</h2>
             
             <div className="result-content">
-              {aiResult}
+              <ReactMarkdown>{aiResult}</ReactMarkdown>
             </div>
 
             <button 
